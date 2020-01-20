@@ -1,0 +1,17 @@
+{
+  "name": "wasm-arduino-wifi-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm run asbuild:optimized && xxd -i app.wasm > app.wasm.h",
+    "asbuild:optimized": "npx asc app.ts -b app.wasm -O3z --runtime full --noAssert --use abort="
+  },
+  "author": "Alvaro Viebrantz",
+  "license": "MIT",
+  "devDependencies": {
+    "as-bind": "^0.1.3",
+    "assemblyscript": "^0.8.1"
+  }
+}
