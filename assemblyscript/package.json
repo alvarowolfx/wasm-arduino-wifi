@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm run asbuild:optimized && xxd -i app.wasm > app.wasm.h",
-    "asbuild:optimized": "npx asc app.ts -b app.wasm -O3z --runtime full --noAssert --use abort="
+    "asbuild:optimized": "npx asc app.ts -b app.wasm -O3z --runtime half --noAssert --use abort="
   },
   "author": "Alvaro Viebrantz",
   "license": "MIT",
