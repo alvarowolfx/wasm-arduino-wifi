@@ -77,17 +77,16 @@ m3ApiRawFunction(m3_arduino_getPinLED)
 
 m3ApiRawFunction(m3_arduino_log)
 {
-  m3ApiGetArgMem(const char *, out)
-      //m3ApiGetArg(uint32_t, out_len)
+  m3ApiGetArgMem(const byte *, out);
+  m3ApiGetArg(int32_t, out_len);
 
-      //char output[out_len + 1];
-      //memcpy(output, out, out_len);
-      //printf(out);
-      Serial.println(out);
-  //Serial.println(output);
-  //Serial.println(strlen(out));
-  //Serial.println(sizeof(out));
-  //Serial.println(String(out));
+  //printf("api: log %p\n", out);
+
+  byte buff[out_len + 1];
+  memcpy(buff, out, out_len);
+  buff[out_len] = '\0';
+
+  Serial.print((char *)buff);
 
   m3ApiSuccess();
 }
@@ -101,22 +100,43 @@ m3ApiRawFunction(m3_arduino_wifi_status)
 
 m3ApiRawFunction(m3_arduino_wifi_connect)
 {
-  m3ApiGetArgMem(const char *, ssid)
-      m3ApiGetArgMem(const char *, password);
+  m3ApiGetArgMem(const byte *, ssid);
+  m3ApiGetArg(int32_t, ssid_len);
+  m3ApiGetArgMem(const byte *, pass);
+  m3ApiGetArg(int32_t, pass_len);
 
-  uint32_t len_ssid = strlen(ssid) + 1;
-  char local_ssid[len_ssid];
-  uint32_t len_password = strlen(password) + 1;
-  char local_password[len_password];
+  byte local_ssid[ssid_len + 1];
+  byte local_password[pass_len + 1];
 
-  memcpy(local_ssid, ssid, len_ssid);
-  memcpy(local_password, password, len_password);
-  Serial.println("Ssid");
-  Serial.println(local_ssid);
-  Serial.println("Password");
-  Serial.println(local_password);
+  memcpy(local_ssid, ssid, ssid_len);
+  local_ssid[ssid_len] = '\0';
+  memcpy(local_password, pass, pass_len);
+  local_password[pass_len] = '\0';
 
-  WiFi.begin(local_ssid, local_password);
+  WiFi.begin((char *)local_ssid, (char *)local_password);
+
+  m3ApiSuccess();
+}
+
+m3ApiRawFunction(m3_arduino_wifi_local_ip)
+{
+  m3ApiReturnType(const byte *);
+
+  const char *ip = WiFi.localIP().toString().c_str();
+  uint32_t len = strlen(ip);
+  byte local_ip[len + 1];
+  memcpy(local_ip, ip, len);
+  local_ip[len] = '\0';
+  Serial.println(ip);
+
+  m3ApiReturn(local_ip);
+}
+
+m3ApiRawFunction(m3_arduino_wifi_print_local_ip)
+{
+  Serial.println(WiFi.localIP());
+
+  m3ApiSuccess();
 }
 
 // Dummy, for TinyGO
@@ -135,14 +155,15 @@ M3Result m3_LinkArduino(IM3Runtime runtime)
   m3_LinkRawFunction(module, arduino, "delay", "v(i)", &m3_arduino_delay);
   m3_LinkRawFunction(module, arduino, "pinMode", "v(ii)", &m3_arduino_pinMode);
   m3_LinkRawFunction(module, arduino, "digitalWrite", "v(ii)", &m3_arduino_digitalWrite);
-  m3_LinkRawFunction(module, arduino, "serialLog", "v(*)", &m3_arduino_log);
-  //m3_LinkRawFunction(module, arduino, "serialLog", "v(*i)", &m3_arduino_log);
+  m3_LinkRawFunction(module, arduino, "log", "v(*i)", &m3_arduino_log);
 
   m3_LinkRawFunction(module, arduino, "getPinLED", "i()", &m3_arduino_getPinLED);
 
   /* Wifi */
   m3_LinkRawFunction(module, wifi, "wifiStatus", "i()", &m3_arduino_wifi_status);
-  m3_LinkRawFunction(module, wifi, "wifiConnect", "v(**)", &m3_arduino_wifi_connect);
+  m3_LinkRawFunction(module, wifi, "wifiConnect", "v(*i*i)", &m3_arduino_wifi_connect);
+  m3_LinkRawFunction(module, wifi, "wifiLocalIp", "*()", &m3_arduino_wifi_local_ip);
+  m3_LinkRawFunction(module, wifi, "printWifiLocalIp", "v()", &m3_arduino_wifi_print_local_ip);
 
   m3_LinkRawFunction(module, "env", "io_get_stdout", "i()", &m3_dummy);
 

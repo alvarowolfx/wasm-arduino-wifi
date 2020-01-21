@@ -10,11 +10,14 @@
 #include <wasm3.h>
 #include "m3_arduino_api.h"
 
+#define WASM_STACK_SLOTS 2048
+#define NATIVE_STACK_SIZE 32 * 1024
+
 // AssemblyScript app
-//#include "../assemblyscript/app.wasm.h"
+#include "../assemblyscript/app.wasm.h"
 
 // Rust app
-#include "../rust/app.wasm.h"
+//#include "../rust/app.wasm.h"
 
 #define FATAL(func, msg)              \
   {                                   \
@@ -31,7 +34,7 @@ void wasm_task(void *)
   if (!env)
     FATAL("NewEnvironment", "failed");
 
-  IM3Runtime runtime = m3_NewRuntime(env, 8 * 1024, NULL);
+  IM3Runtime runtime = m3_NewRuntime(env, WASM_STACK_SLOTS, NULL);
   if (!runtime)
     FATAL("NewRuntime", "failed");
 
@@ -73,7 +76,7 @@ void setup()
 
 #ifdef ESP32
   // On ESP32, we can launch in a separate thread
-  xTaskCreate(&wasm_task, "wasm3", 65536, NULL, 5, NULL);
+  xTaskCreate(&wasm_task, "wasm3", NATIVE_STACK_SIZE, NULL, 5, NULL);
 #else
   wasm_task(NULL);
 #endif
