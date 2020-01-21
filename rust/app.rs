@@ -7,6 +7,15 @@ static LED: u32 = 5;
 
 fn setup() {
     pin_mode(LED, OUTPUT);
+
+    wifi_connect("ssid", "pass");
+    delay(500);
+    while wifi_status() != WL_CONNECTED {
+      delay(500);
+      serial_log(".");
+    }
+
+    serial_log("WiFi Connected");    
 }
 
 fn run() {

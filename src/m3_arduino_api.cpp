@@ -5,7 +5,7 @@
 #include <m3_env.h>
 
 #include <Arduino.h>
-
+#include <WiFi.h>
 /*
  * Note: each RawFunction should complete with one of these calls:
  *   m3ApiReturn(val)   - Returns a value
@@ -92,6 +92,33 @@ m3ApiRawFunction(m3_arduino_log)
   m3ApiSuccess();
 }
 
+m3ApiRawFunction(m3_arduino_wifi_status)
+{
+  m3ApiReturnType(uint32_t)
+
+      m3ApiReturn(WiFi.status());
+}
+
+m3ApiRawFunction(m3_arduino_wifi_connect)
+{
+  m3ApiGetArgMem(const char *, ssid)
+      m3ApiGetArgMem(const char *, password);
+
+  uint32_t len_ssid = strlen(ssid) + 1;
+  char local_ssid[len_ssid];
+  uint32_t len_password = strlen(password) + 1;
+  char local_password[len_password];
+
+  memcpy(local_ssid, ssid, len_ssid);
+  memcpy(local_password, password, len_password);
+  Serial.println("Ssid");
+  Serial.println(local_ssid);
+  Serial.println("Password");
+  Serial.println(local_password);
+
+  WiFi.begin(local_ssid, local_password);
+}
+
 // Dummy, for TinyGO
 m3ApiRawFunction(m3_dummy)
 {
@@ -102,6 +129,7 @@ M3Result m3_LinkArduino(IM3Runtime runtime)
 {
   IM3Module module = runtime->modules;
   const char *arduino = "arduino";
+  const char *wifi = "wifi";
 
   m3_LinkRawFunction(module, arduino, "millis", "i()", &m3_arduino_millis);
   m3_LinkRawFunction(module, arduino, "delay", "v(i)", &m3_arduino_delay);
@@ -111,6 +139,10 @@ M3Result m3_LinkArduino(IM3Runtime runtime)
   //m3_LinkRawFunction(module, arduino, "serialLog", "v(*i)", &m3_arduino_log);
 
   m3_LinkRawFunction(module, arduino, "getPinLED", "i()", &m3_arduino_getPinLED);
+
+  /* Wifi */
+  m3_LinkRawFunction(module, wifi, "wifiStatus", "i()", &m3_arduino_wifi_status);
+  m3_LinkRawFunction(module, wifi, "wifiConnect", "v(**)", &m3_arduino_wifi_connect);
 
   m3_LinkRawFunction(module, "env", "io_get_stdout", "i()", &m3_dummy);
 
