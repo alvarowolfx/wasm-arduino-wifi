@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm run asbuild:optimized && xxd -i app.wasm > app.wasm.h",
+    "build": "npm run asbuild:optimized && xxd -i app.wasm > app.wasm.h && cp app.wasm ../data/app.wasm",
     "asbuild:optimized": "npx asc app.ts -b app.wasm -t app.wat -O3z --runtime half --noAssert --use abort="
   },
   "devDependencies": {
