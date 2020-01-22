@@ -75,7 +75,7 @@ m3ApiRawFunction(m3_arduino_getPinLED)
       m3ApiReturn(LED_BUILTIN);
 }
 
-m3ApiRawFunction(m3_arduino_log)
+m3ApiRawFunction(m3_arduino_print)
 {
   m3ApiGetArgMem(const byte *, out);
   m3ApiGetArg(int32_t, out_len);
@@ -120,16 +120,13 @@ m3ApiRawFunction(m3_arduino_wifi_connect)
 
 m3ApiRawFunction(m3_arduino_wifi_local_ip)
 {
-  m3ApiReturnType(const byte *);
+  m3ApiGetArgMem(char *, out);
 
   const char *ip = WiFi.localIP().toString().c_str();
   uint32_t len = strlen(ip);
-  byte local_ip[len + 1];
-  memcpy(local_ip, ip, len);
-  local_ip[len] = '\0';
-  Serial.println(ip);
-
-  m3ApiReturn(local_ip);
+  memcpy(out, ip, len);
+  out[len] = '\0';
+  m3ApiSuccess();
 }
 
 m3ApiRawFunction(m3_arduino_wifi_print_local_ip)
@@ -155,14 +152,14 @@ M3Result m3_LinkArduino(IM3Runtime runtime)
   m3_LinkRawFunction(module, arduino, "delay", "v(i)", &m3_arduino_delay);
   m3_LinkRawFunction(module, arduino, "pinMode", "v(ii)", &m3_arduino_pinMode);
   m3_LinkRawFunction(module, arduino, "digitalWrite", "v(ii)", &m3_arduino_digitalWrite);
-  m3_LinkRawFunction(module, arduino, "log", "v(*i)", &m3_arduino_log);
+  m3_LinkRawFunction(module, arduino, "print", "v(*i)", &m3_arduino_print);
 
   m3_LinkRawFunction(module, arduino, "getPinLED", "i()", &m3_arduino_getPinLED);
 
   /* Wifi */
   m3_LinkRawFunction(module, wifi, "wifiStatus", "i()", &m3_arduino_wifi_status);
   m3_LinkRawFunction(module, wifi, "wifiConnect", "v(*i*i)", &m3_arduino_wifi_connect);
-  m3_LinkRawFunction(module, wifi, "wifiLocalIp", "*()", &m3_arduino_wifi_local_ip);
+  m3_LinkRawFunction(module, wifi, "wifiLocalIp", "v(*)", &m3_arduino_wifi_local_ip);
   m3_LinkRawFunction(module, wifi, "printWifiLocalIp", "v()", &m3_arduino_wifi_print_local_ip);
 
   m3_LinkRawFunction(module, "env", "io_get_stdout", "i()", &m3_dummy);

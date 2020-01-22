@@ -13,8 +13,8 @@ declare function digitalWrite(pin: u32, value: u32): void;
 @external("arduino", "getPinLED")
 declare function getPinLED(): u32;
 
-@external("arduino", "log")
-declare function println(ptr: usize, len: i32): void;
+@external("arduino", "print")
+declare function print(ptr: usize, len: i32): void;
 
 @external("wifi", "wifiStatus")
 declare function wifiStatus(): u32;
@@ -22,8 +22,8 @@ declare function wifiStatus(): u32;
 @external("wifi", "wifiConnect")
 declare function wifiConnect(ssid: usize, ssid_len: i32, pass: usize, pass_len: i32): void;
 
-@external("wifi", "printWifiLocalIp")
-declare function printWifiLocalIp(): void;
+@external("wifi", "wifiLocalIp")
+declare function wifiLocalIp(ptr: usize): void;
 
 function connect(ssid: string, pass: string): void {
   wifiConnect(
@@ -32,8 +32,18 @@ function connect(ssid: string, pass: string): void {
   )
 }
 
-function log(str: string): void {
-  println(changetype<usize>(String.UTF8.encode(str)), String.UTF8.byteLength(str));
+function serialPrint(str: string): void {
+  print(changetype<usize>(String.UTF8.encode(str)), String.UTF8.byteLength(str));
+}
+
+function serialPrintln(str: string): void {
+  serialPrint(str + '\n')
+}
+
+function getLocalIp(): string {
+  const arr = new ArrayBuffer(16);
+  wifiLocalIp(changetype<usize>(arr));
+  return String.UTF8.decode(arr, true)
 }
 
 const LOW: u32 = 0;
@@ -60,21 +70,24 @@ const password = "YOUR_PASSWORD"
 function setup(): void {
   LED = getPinLED();
   pinMode(LED, OUTPUT);
-  log('Hello from AssemblyScript 😊\n')
+  serialPrintln('Hello from AssemblyScript 😊')
 
   connect(ssid, password)
-  log("Connecting to wifi \n")
+  serialPrintln("Connecting")
   while (wifiStatus() != WL_CONNECTED) {
     delay(500);
-    log(".")
+    serialPrint(".")
   }
-  log("Connected!\n")
-  printWifiLocalIp()
+  serialPrintln("Connected!")
+  serialPrintln(getLocalIp())
 }
 
 function run(): void {
   const t: u32 = millis();
-  log('[' + t.toString() + '] ' + 'Running. \n');
+  const connected: bool = wifiStatus() === WL_CONNECTED;
+  const localIp: string = getLocalIp();
+
+  serialPrintln('[' + t.toString() + ']' + '[connected : ' + connected.toString() + '] [' + localIp + '] Running.');
 
   digitalWrite(LED, HIGH);
   delay(1000);
