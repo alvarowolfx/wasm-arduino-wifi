@@ -146,15 +146,17 @@ M3Result m3_LinkArduino(IM3Runtime runtime)
 {
   IM3Module module = runtime->modules;
   const char *arduino = "arduino";
+  const char *serial = "serial";
   const char *wifi = "wifi";
 
   m3_LinkRawFunction(module, arduino, "millis", "i()", &m3_arduino_millis);
   m3_LinkRawFunction(module, arduino, "delay", "v(i)", &m3_arduino_delay);
   m3_LinkRawFunction(module, arduino, "pinMode", "v(ii)", &m3_arduino_pinMode);
   m3_LinkRawFunction(module, arduino, "digitalWrite", "v(ii)", &m3_arduino_digitalWrite);
-  m3_LinkRawFunction(module, arduino, "print", "v(*i)", &m3_arduino_print);
-
   m3_LinkRawFunction(module, arduino, "getPinLED", "i()", &m3_arduino_getPinLED);
+
+  /* Serial */
+  m3_LinkRawFunction(module, serial, "print", "v(*i)", &m3_arduino_print);
 
   /* Wifi */
   m3_LinkRawFunction(module, wifi, "wifiStatus", "i()", &m3_arduino_wifi_status);
