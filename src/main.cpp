@@ -144,9 +144,10 @@ void startOta()
 
   // Hostname defaults to esp3232-[MAC]
   // ArduinoOTA.setHostname("myesp32");
+  ArduinoOTA.setMdnsEnabled(true);
 
   // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
-  ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
+  // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
 
   ArduinoOTA
       .onStart([]() {
@@ -183,6 +184,20 @@ void startOta()
   otaStarted = true;
 }
 
+void handleOTA()
+{
+  ArduinoOTA.handle();
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    startOta();
+  }
+  else
+  {
+    otaStarted = false;
+    ArduinoOTA.end();
+  }
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -204,14 +219,6 @@ void setup()
 
 void loop()
 {
-  if (WiFi.status() == WL_CONNECTED)
-  {
-    startOta();
-  }
-  else
-  {
-    otaStarted = false;
-    ArduinoOTA.end();
-  }
+  handleOTA();
   delay(100);
 }
