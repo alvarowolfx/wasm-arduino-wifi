@@ -37,24 +37,30 @@ function connect(): void {
   Serial.println(WiFi.localIp())
 }
 
+const blinkInterval: u32 = 1000;
+let lastMillis: u32 = 0;
+let ledState: bool = false;
 function setup(): void {
+
   LED = getPinLED();
   pinMode(LED, OUTPUT);
+  digitalWrite(LED, ledState ? HIGH : LOW);
+  lastMillis = millis();
   Serial.println('Hello from AssemblyScript 😊')
 }
 
 function run(): void {
-  connect()
-  const t: u32 = millis();
-  const connected: bool = WiFi.status() === WiFi.WL_CONNECTED;
-  const localIp: string = WiFi.localIp();
-
-  Serial.println('[' + t.toString() + ']' + '[connected : ' + connected.toString() + '] [' + localIp + '] Running.');
-
-  digitalWrite(LED, HIGH);
-  delay(1000);
-  digitalWrite(LED, LOW);
-  delay(1000);
+  connect();
+  const currentMillis: u32 = millis();
+  if (currentMillis - lastMillis >= blinkInterval) {
+    const connected: bool = WiFi.status() === WiFi.WL_CONNECTED;
+    const localIp: string = WiFi.localIp();
+    Serial.println('[' + currentMillis.toString() + ']' + '[connected : ' + connected.toString() + '] [' + localIp + '] Another version.');
+    ledState = !ledState;
+    digitalWrite(LED, ledState ? HIGH : LOW);
+    lastMillis = millis();
+  }
+  delay(10);
 }
 
 /*
