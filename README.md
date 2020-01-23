@@ -18,16 +18,16 @@ Steps to update WASM code:
 
 #### To update via WiFi
 * Your device needs to sucessfully connect to the network. Then follow the steps:
-* First search for the MDNS service using `dns-sd -B _arduino .`. Example output:
+* First search for the MDNS service using `dns-sd -B _ota .`. Example output:
 ```
-Browsing for _arduino._tcp
-DATE: ---Wed 22 Jan 2020---
-9:51:36.357  ...STARTING...
-Timestamp     A/R    Flags  if Domain               Service Type         Instance Name 
-9:51:36.358  Add        2   8 local.               _arduino._tcp.       esp32-30aea438c8e0
+Browsing for _ota._tcp
+DATE: ---Thu 23 Jan 2020---
+ 0:04:57.636  ...STARTING...
+Timestamp     A/R    Flags  if Domain               Service Type         Instance Name
+ 0:07:10.852  Add        2   8 local.               _ota._tcp.           esp-38A4AE30
 ```
-* Them run the same pio command to uploadfs, but with the service name:
+* Them send an Wasm file on the /upload endpoint on the device:
 ```
-pio run --target uploadfs --upload-port esp32-30aea438c8e0.local
+curl -X POST -F "app.wasm=@./app.wasm" http://esp-38A4AE30.local/upload
 ```
 
