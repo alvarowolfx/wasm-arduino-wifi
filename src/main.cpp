@@ -6,15 +6,25 @@
 //
 
 #include "Arduino.h"
-#include <ArduinoOTA.h>
+#ifdef ESP32
 #include <FS.h>
 #include <SPIFFS.h>
+#include <ESPmDNS.h>
+#include <WiFi.h>
+#include <AsyncTCP.h>
+#elif defined(ESP8266)
+#include <ESP8266WiFi.h>
+#include <ESPAsyncTCP.h>
+#include <ESP8266mDNS.h>
+#endif
+#include <ESPAsyncWebServer.h>
 #include <wasm3.h>
 #include "m3_arduino_api.h"
 
 #define WASM_STACK_SLOTS 2048
 #define NATIVE_STACK_SIZE 32 * 1024
 
+AsyncWebServer server(80);
 // AssemblyScript app
 // #include "../assemblyscript/app.wasm.h"
 
@@ -25,7 +35,8 @@
   {                                   \
     Serial.print("Fatal: " func " "); \
     Serial.println(msg);              \
-    return;                           \
+    delay(1000);                      \
+    continue;                         \
   }
 
 size_t readWasmFileSize(const char *path)
@@ -44,8 +55,9 @@ size_t readWasmFileSize(const char *path)
     Serial.println("Failed to open file for reading");
     return 0;
   }
-
-  return file.size();
+  size_t size = file.size();
+  file.close();
+  return size;
 }
 
 size_t readWasmFile(const char *path, uint8_t *buf)
@@ -130,71 +142,28 @@ void wasm_task(void *)
   }
 }
 
-bool otaStarted = false;
-void startOta()
+void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
 {
-
-  if (otaStarted)
+  if (!filename.endsWith(".wasm"))
   {
+    request->send(400, "text/plain", "Only wasm files accepted");
     return;
   }
-
-  // Port defaults to 3232
-  ArduinoOTA.setPort(3232);
-
-  // Hostname defaults to esp3232-[MAC]
-  // ArduinoOTA.setHostname("myesp32");
-  ArduinoOTA.setMdnsEnabled(true);
-
-  // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
-  // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
-
-  ArduinoOTA
-      .onStart([]() {
-        String type;
-        if (ArduinoOTA.getCommand() == U_FLASH)
-          type = "sketch";
-        else // U_SPIFFS
-          type = "filesystem";
-
-        // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-        Serial.println("Start updating " + type);
-      })
-      .onEnd([]() {
-        Serial.println("\nEnd");
-      })
-      .onProgress([](unsigned int progress, unsigned int total) {
-        Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-      })
-      .onError([](ota_error_t error) {
-        Serial.printf("Error[%u]: ", error);
-        if (error == OTA_AUTH_ERROR)
-          Serial.println("Auth Failed");
-        else if (error == OTA_BEGIN_ERROR)
-          Serial.println("Begin Failed");
-        else if (error == OTA_CONNECT_ERROR)
-          Serial.println("Connect Failed");
-        else if (error == OTA_RECEIVE_ERROR)
-          Serial.println("Receive Failed");
-        else if (error == OTA_END_ERROR)
-          Serial.println("End Failed");
-      });
-
-  ArduinoOTA.begin();
-  otaStarted = true;
-}
-
-void handleOTA()
-{
-  ArduinoOTA.handle();
-  if (WiFi.status() == WL_CONNECTED)
+  if (!index)
   {
-    startOta();
+    Serial.printf("UploadStart: %s\n", filename.c_str());
+    request->_tempFile = SPIFFS.open("/app.wasm", "w");
   }
-  else
+  if (len)
   {
-    otaStarted = false;
-    ArduinoOTA.end();
+    request->_tempFile.write(data, len);
+  }
+  //Serial.printf("%s", (const char *)data);
+  if (final)
+  {
+    request->_tempFile.close();
+    Serial.printf("UploadEnd: %s (%u)\n", filename.c_str(), index + len);
+    request->send(200, "text/plain", "Uploaded");
   }
 }
 
@@ -206,7 +175,20 @@ void setup()
   SPIFFS.begin();
   delay(100);
 
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.softAP("WasmOTA");
+
+  uint64_t chipid = ESP.getEfuseMac();
+  char hostname[20];
+  sprintf(hostname, "esp-%08X", (uint32_t)chipid);
+
+  MDNS.begin(hostname);
+  server.on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) {}, handleUpload);
+  server.begin();
+  MDNS.addService("ota", "tcp", 80);
+
   Serial.print("\nWasm3 v" M3_VERSION ", build " __DATE__ " " __TIME__ "\n");
+  Serial.print(hostname);
 
 #ifdef ESP32
   // On ESP32, we can launch in a separate thread
@@ -219,6 +201,5 @@ void setup()
 
 void loop()
 {
-  handleOTA();
   delay(100);
 }
