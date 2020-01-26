@@ -40,6 +40,7 @@ function connect(): void {
 const blinkInterval: u32 = 1000;
 let lastMillis: u32 = 0;
 let ledState: bool = false;
+
 function setup(): void {
   ledPin = getPinLED();
   pinMode(ledPin, OUTPUT);

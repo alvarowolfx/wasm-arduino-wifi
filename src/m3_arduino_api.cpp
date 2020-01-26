@@ -179,6 +179,7 @@ M3Result m3_LinkArduino(IM3Runtime runtime)
   m3_LinkRawFunction(module, wifi, "wifiLocalIp", "v(*)", &m3_arduino_wifi_local_ip);
   m3_LinkRawFunction(module, wifi, "printWifiLocalIp", "v()", &m3_arduino_wifi_print_local_ip);
 
+  // Dummy (for TinyGo)
   m3_LinkRawFunction(module, "env", "io_get_stdout", "i()", &m3_dummy);
 
   return m3Err_none;

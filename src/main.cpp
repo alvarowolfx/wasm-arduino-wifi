@@ -21,7 +21,7 @@
 #include <wasm3.h>
 #include "m3_arduino_api.h"
 
-#define WASM_STACK_SLOTS 2048
+#define WASM_STACK_SLOTS 2 * 1024
 #define NATIVE_STACK_SIZE 32 * 1024
 
 AsyncWebServer server(80);
@@ -31,17 +31,22 @@ AsyncWebServer server(80);
 // Rust app
 //#include "../rust/app.wasm.h"
 
-#define FATAL(func, msg)              \
+#define FATAL_MSG(func, msg)          \
   {                                   \
     Serial.print("Fatal: " func " "); \
     Serial.println(msg);              \
     delay(1000);                      \
-    continue;                         \
+  }
+
+#define FATAL(func, msg) \
+  {                      \
+    FATAL_MSG(func, msg) \
+    continue;            \
   }
 
 size_t readWasmFileSize(const char *path)
 {
-  //Serial.printf("Reading file: %s\n", path);
+  Serial.printf("Reading file: %s\n", path);
 
   if (!SPIFFS.exists(path))
   {
@@ -62,7 +67,7 @@ size_t readWasmFileSize(const char *path)
 
 size_t readWasmFile(const char *path, uint8_t *buf)
 {
-  //Serial.printf("Reading file: %s\n", path);
+  Serial.printf("Reading file: %s\n", path);
 
   if (!SPIFFS.exists(path))
   {
@@ -91,17 +96,23 @@ size_t readWasmFile(const char *path, uint8_t *buf)
 
 void wasm_task(void *)
 {
+  IM3Environment env = m3_NewEnvironment();
+  if (!env)
+  {
+    FATAL_MSG("NewEnvironment", "failed");
+    return;
+  }
+
+  IM3Runtime runtime = m3_NewRuntime(env, WASM_STACK_SLOTS, NULL);
+  if (!runtime)
+  {
+    FATAL_MSG("NewRuntime", "failed");
+    return;
+  }
+
   while (1)
   {
     M3Result result = m3Err_none;
-
-    IM3Environment env = m3_NewEnvironment();
-    if (!env)
-      FATAL("NewEnvironment", "failed");
-
-    IM3Runtime runtime = m3_NewRuntime(env, WASM_STACK_SLOTS, NULL);
-    if (!runtime)
-      FATAL("NewRuntime", "failed");
 
     size_t app_wasm_size = readWasmFileSize("/app.wasm");
     if (app_wasm_size == 0)
@@ -126,7 +137,12 @@ void wasm_task(void *)
       FATAL("LinkArduino", result);
 
     IM3Function f;
-    result = m3_FindFunction(&f, runtime, "_start");
+    // TinyGo workaround
+    result = m3_FindFunction(&f, runtime, "cwa_main");
+    if (result)
+    {
+      result = m3_FindFunction(&f, runtime, "_start");
+    }
     if (result)
       FATAL("FindFunction", result);
 
@@ -135,10 +151,18 @@ void wasm_task(void *)
     const char *i_argv[1] = {NULL};
     result = m3_CallWithArgs(f, 0, i_argv);
 
-    if (result)
-      FATAL("CallWithArgs", result);
-
     // Should not arrive here
+
+    if (result)
+    {
+      M3ErrorInfo info;
+      m3_GetErrorInfo(runtime, &info);
+      Serial.print("Error: ");
+      Serial.print(result);
+      Serial.print(" (");
+      Serial.print(info.message);
+      Serial.println(")");
+    }
   }
 }
 
