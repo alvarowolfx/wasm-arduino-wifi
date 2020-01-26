@@ -96,6 +96,15 @@ m3ApiRawFunction(m3_arduino_print)
   m3ApiSuccess();
 }
 
+m3ApiRawFunction(m3_arduino_print_int)
+{
+  m3ApiGetArg(int32_t, out);
+
+  Serial.print(out);
+
+  m3ApiSuccess();
+}
+
 m3ApiRawFunction(m3_arduino_wifi_status)
 {
   m3ApiReturnType(uint32_t)
@@ -136,7 +145,7 @@ m3ApiRawFunction(m3_arduino_wifi_local_ip)
 
 m3ApiRawFunction(m3_arduino_wifi_print_local_ip)
 {
-  Serial.println(WiFi.localIP());
+  Serial.print(WiFi.localIP());
 
   m3ApiSuccess();
 }
@@ -162,6 +171,7 @@ M3Result m3_LinkArduino(IM3Runtime runtime)
 
   /* Serial */
   m3_LinkRawFunction(module, serial, "print", "v(*i)", &m3_arduino_print);
+  m3_LinkRawFunction(module, serial, "printInt", "v(i)", &m3_arduino_print_int);
 
   /* Wifi */
   m3_LinkRawFunction(module, wifi, "wifiStatus", "i()", &m3_arduino_wifi_status);

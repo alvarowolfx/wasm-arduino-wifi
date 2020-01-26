@@ -3,27 +3,73 @@
 mod arduino_api;
 use arduino_api::*;
 
-static LED: u32 = 5;
+const BLINK_INTERVAL: u32 = 1000;
+const SSID : &str = "YOUR_SSID"; 
+const PASSWORD : &str = "YOUR_PASS";
 
-fn setup() {
-    pin_mode(LED, OUTPUT);
-
-    wifi_connect("ssid", "pass");
-    delay(500);
-    while wifi_status() != WL_CONNECTED {
-      delay(500);
-      serial_log(".");
-    }
-
-    serial_log("WiFi Connected");    
+struct App {
+  led_pin: u32,
+  last_millis: u32,
+  led_state: bool,
 }
 
-fn run() {
-    serial_log("Hello from Rust");    
-    digital_write(LED, HIGH);
-    delay(1000);
-    digital_write(LED, LOW);
-    delay(1000);
+impl App {
+
+  fn new() -> Self {
+    let led_pin = getPinLED();
+    let led_state = false;
+    let last_millis = millis();      
+    
+    pinMode(led_pin, OUTPUT);
+    digitalWrite(led_pin, LOW );
+    
+    serialPrintln("Hello from Rust 🦀");
+    Self { led_pin, led_state, last_millis }
+  }
+
+  fn connect(&self) {
+    if wifiStatus() == WL_CONNECTED {
+      return;
+    }
+
+    wifiConnect(SSID, PASSWORD);
+    serialPrintln("Connecting");
+    let mut attempts = 0;
+    while wifiStatus() != WL_CONNECTED {
+      delay(500);
+      serialPrint(".");
+      attempts = attempts + 1;
+      if attempts >= 10 {
+        serialPrintln("Failed to connect!");
+        return;
+      }
+    }    
+    serialPrintln("Connected!");
+    printWifiLocalIp();
+    serialPrintln("");
+  }
+
+  fn run(&mut self) {
+    self.connect();
+    let current_millis: u32 = millis();
+    if current_millis - self.last_millis >= BLINK_INTERVAL {
+      let connected: bool = wifiStatus() == WL_CONNECTED;      
+      
+      serialPrint("[");
+      serialPrintInt(current_millis);
+      serialPrint("][connected : ");
+      serialPrint(if connected { "true" } else { "false" });
+      serialPrint("][");
+      printWifiLocalIp();
+      serialPrintln("] Rust 🦀");
+      
+      self.led_state = !self.led_state;
+      digitalWrite(self.led_pin, if self.led_state { HIGH } else { LOW });
+      
+      self.last_millis = millis();
+    }
+    delay(10);    
+  }
 }
 
 /*
@@ -32,9 +78,9 @@ fn run() {
 
 #[no_mangle]
 pub extern fn _start() {
-    setup();
+    let mut app = App::new();    
     loop {
-        run();
+        app.run();
     }
 }
 

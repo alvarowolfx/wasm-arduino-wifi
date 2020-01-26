@@ -11,7 +11,7 @@ import {
 } from './arduino';
 import * as Serial from './serial';
 
-let LED: u32 = -1;
+let ledPin: u32 = -1;
 
 const ssid = "YOUR_SSID"
 const password = "YOUR_PASSWORD"
@@ -41,10 +41,9 @@ const blinkInterval: u32 = 1000;
 let lastMillis: u32 = 0;
 let ledState: bool = false;
 function setup(): void {
-
-  LED = getPinLED();
-  pinMode(LED, OUTPUT);
-  digitalWrite(LED, ledState ? HIGH : LOW);
+  ledPin = getPinLED();
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, ledState ? HIGH : LOW);
   lastMillis = millis();
   Serial.println('Hello from AssemblyScript 😊')
 }
@@ -55,9 +54,9 @@ function run(): void {
   if (currentMillis - lastMillis >= blinkInterval) {
     const connected: bool = WiFi.status() === WiFi.WL_CONNECTED;
     const localIp: string = WiFi.localIp();
-    Serial.println('[' + currentMillis.toString() + ']' + '[connected : ' + connected.toString() + '] [' + localIp + '] Another version.');
+    Serial.println('[' + currentMillis.toString() + ']' + '[connected : ' + connected.toString() + '] [' + localIp + '] AssemblyScript 😊');
     ledState = !ledState;
-    digitalWrite(LED, ledState ? HIGH : LOW);
+    digitalWrite(ledPin, ledState ? HIGH : LOW);
     lastMillis = millis();
   }
   delay(10);

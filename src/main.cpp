@@ -41,7 +41,7 @@ AsyncWebServer server(80);
 
 size_t readWasmFileSize(const char *path)
 {
-  Serial.printf("Reading file: %s\n", path);
+  //Serial.printf("Reading file: %s\n", path);
 
   if (!SPIFFS.exists(path))
   {
@@ -62,7 +62,7 @@ size_t readWasmFileSize(const char *path)
 
 size_t readWasmFile(const char *path, uint8_t *buf)
 {
-  Serial.printf("Reading file: %s\n", path);
+  //Serial.printf("Reading file: %s\n", path);
 
   if (!SPIFFS.exists(path))
   {
