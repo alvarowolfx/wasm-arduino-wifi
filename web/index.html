@@ -1,0 +1,93 @@
+<html>
+
+<head>
+  <title>Wasm on the Browser</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+  <style>
+    #led {
+      width: 200px;
+      height: 200px;
+      border-radius: 50px;
+      background-color: black;
+      color: white;
+      display: inline-block;
+      overflow: hidden;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body class="w-full mx-auto px-8">
+  <header>
+    <h2 class="block text-black p-4">
+      Wasm Arduino
+    </h2>
+  </header>
+  <div class="md:flex m-12">
+    <div id="led" class="w-full">
+      LED
+    </div>
+    <div class="w-full px-6">
+      <div class="mb-2">
+        <label class="block text-black text-sm font-bold mb-2" for="source">
+          Source
+        </label>
+        <div class="relative">
+          <select
+            class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+            id="source">
+            <option value="as.wasm">AssemblyScript</option>
+            <option value="rust.wasm">Rust</option>
+            <option value="tinygo.wasm">TinyGo</option>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+              <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+          </div>
+        </div>
+      </div>
+      <div class="mb-2">
+        <label class="block text-black text-sm font-bold mb-2" for="password">
+          Wifi Status
+        </label>
+        <div class="relative">
+          <select
+            class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+            id="wifiStatus" disabled>
+            <option value="offline">Offline</option>
+            <option value="online">Online</option>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+              <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
+          </div>
+        </div>
+      </div>
+      <div class="mb-2">
+        <label class="block text-black text-sm font-bold mb-2" for="ipaddr">
+          IP Address
+        </label>
+        <input style="background-color: rgba(255.0, 255.0, 255.0, 0.2);"
+          class="border-2 w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline" id="ipaddr"
+          name="ipaddr" placeholder="127.0.0.1" value="127.0.0.1">
+      </div>
+      <div class="mb-2">
+        <label class="block text-black text-sm font-bold mb-2" for="ssid">
+          Current SSID
+        </label>
+        <input style="background-color: rgba(255.0, 255.0, 255.0, 0.2);"
+          class="border-2 w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline" id="ssid" name="ssid"
+          disabled>
+      </div>
+    </div>
+  </div>
+  <p id="serial" style="height: 300px;overflow: scroll;">
+
+  </p>
+  <script src="./index.js"></script>
+</body>
+
+</html>
