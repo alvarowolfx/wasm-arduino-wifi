@@ -9,9 +9,11 @@ declare function _wifiConnect(ssid: usize, ssid_len: i32, pass: usize, pass_len:
 declare function _wifiLocalIp(ptr: usize): void;
 
 export function connect(ssid: string, pass: string): void {
+  let outSsid = String.UTF8.encode(ssid);
+  let outPass = String.UTF8.encode(pass);
   _wifiConnect(
-    changetype<usize>(String.UTF8.encode(ssid)), String.UTF8.byteLength(ssid),
-    changetype<usize>(String.UTF8.encode(pass)), String.UTF8.byteLength(pass)
+    changetype<usize>(outSsid), outSsid.byteLength,
+    changetype<usize>(outPass), outPass.byteLength
   )
 }
 
@@ -20,9 +22,9 @@ export function status(): u32 {
 }
 
 export function localIp(): string {
-  const arr = new ArrayBuffer(16);
-  _wifiLocalIp(changetype<usize>(arr));
-  return String.UTF8.decode(arr, true)
+  const ptr = memory.data(16);
+  _wifiLocalIp(ptr);
+  return String.UTF8.decodeUnsafe(ptr, 16, true);
 }
 
 export const WL_NO_SHIELD: u32 = 0x255;
