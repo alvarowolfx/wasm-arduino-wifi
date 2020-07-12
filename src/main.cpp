@@ -82,7 +82,7 @@ size_t readWasmFile(const char *path, uint8_t *buf)
     return 0;
   }
 
-  Serial.print("Read from file: ");
+  Serial.println("Read from file: ");
   size_t i = 0;
   while (file.available())
   {
@@ -137,12 +137,7 @@ void wasm_task(void *)
       FATAL("LinkArduino", result);
 
     IM3Function f;
-    // TinyGo workaround
-    result = m3_FindFunction(&f, runtime, "cwa_main");
-    if (result)
-    {
-      result = m3_FindFunction(&f, runtime, "_start");
-    }
+    result = m3_FindFunction(&f, runtime, "_start");
     if (result)
       FATAL("FindFunction", result);
 
@@ -207,7 +202,8 @@ void setup()
   sprintf(hostname, "esp-%08X", (uint32_t)chipid);
 
   MDNS.begin(hostname);
-  server.on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) {}, handleUpload);
+  server.on(
+      "/upload", HTTP_POST, [](AsyncWebServerRequest *request) {}, handleUpload);
   server.begin();
   MDNS.addService("ota", "tcp", 80);
 

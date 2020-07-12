@@ -8,3 +8,5 @@ node_modules
 *.wat
 app.wasm.h
 .vscode/
+web/dist
+web/.cache
