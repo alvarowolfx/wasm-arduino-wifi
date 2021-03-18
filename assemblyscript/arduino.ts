@@ -13,6 +13,15 @@ export declare function digitalWrite(pin: u32, value: u32): void;
 @external("arduino", "getPinLED")
 export declare function getPinLED(): u32;
 
+@external("arduino", "getChipID")
+declare function _getChipID(ptr: usize): void;
+
+export function getChipID(): string {
+  const ptr = memory.data(16);
+  _getChipID(ptr);
+  return String.UTF8.decodeUnsafe(ptr, 16, true);
+}
+
 export const LOW: u32 = 0;
 export const HIGH: u32 = 1;
 

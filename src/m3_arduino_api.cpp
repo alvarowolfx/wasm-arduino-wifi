@@ -20,18 +20,15 @@
 
 m3ApiRawFunction(m3_arduino_millis)
 {
-  m3ApiReturnType(uint32_t)
-
-      m3ApiReturn(millis());
+  m3ApiReturnType(uint32_t);
+  m3ApiReturn(millis());
 }
 
 m3ApiRawFunction(m3_arduino_delay)
 {
-  m3ApiGetArg(uint32_t, ms)
+  m3ApiGetArg(uint32_t, ms);
 
-      //printf("api: delay %d\n", ms); // you can also trace API calls
-
-      delay(ms);
+  delay(ms);
 
   m3ApiSuccess();
 }
@@ -54,20 +51,20 @@ uint8_t mapPinMode(uint8_t mode)
 
 m3ApiRawFunction(m3_arduino_pinMode)
 {
-  m3ApiGetArg(uint32_t, pin)
-      m3ApiGetArg(uint32_t, mode)
+  m3ApiGetArg(uint32_t, pin);
+  m3ApiGetArg(uint32_t, mode);
 
-          pinMode(pin, mapPinMode(mode));
+  pinMode(pin, mapPinMode(mode));
 
   m3ApiSuccess();
 }
 
 m3ApiRawFunction(m3_arduino_digitalWrite)
 {
-  m3ApiGetArg(uint32_t, pin)
-      m3ApiGetArg(uint32_t, value)
+  m3ApiGetArg(uint32_t, pin);
+  m3ApiGetArg(uint32_t, value);
 
-          digitalWrite(pin, value);
+  digitalWrite(pin, value);
 
   m3ApiSuccess();
 }
@@ -75,9 +72,8 @@ m3ApiRawFunction(m3_arduino_digitalWrite)
 // This is a convenience function
 m3ApiRawFunction(m3_arduino_getPinLED)
 {
-  m3ApiReturnType(uint32_t)
-
-      m3ApiReturn(LED_BUILTIN);
+  m3ApiReturnType(uint32_t);
+  m3ApiReturn(LED_BUILTIN);
 }
 
 m3ApiRawFunction(m3_arduino_print)
@@ -132,6 +128,20 @@ m3ApiRawFunction(m3_arduino_wifi_connect)
   m3ApiSuccess();
 }
 
+m3ApiRawFunction(m3_arduino_getChipID)
+{
+  m3ApiGetArgMem(char *, out);
+
+  uint64_t chipid = ESP.getEfuseMac();
+  char chipIdString[12];
+  sprintf(chipIdString, "esp-%08X", (uint32_t)chipid);
+  uint32_t len = strlen(chipIdString);
+  memcpy(out, chipIdString, len);
+  out[len] = '\0';
+
+  m3ApiSuccess();
+}
+
 m3ApiRawFunction(m3_arduino_wifi_local_ip)
 {
   m3ApiGetArgMem(char *, out);
@@ -162,12 +172,14 @@ M3Result m3_LinkArduino(IM3Runtime runtime)
   const char *arduino = "arduino";
   const char *serial = "serial";
   const char *wifi = "wifi";
+  const char *http = "http";
 
   m3_LinkRawFunction(module, arduino, "millis", "i()", &m3_arduino_millis);
   m3_LinkRawFunction(module, arduino, "delay", "v(i)", &m3_arduino_delay);
   m3_LinkRawFunction(module, arduino, "pinMode", "v(ii)", &m3_arduino_pinMode);
   m3_LinkRawFunction(module, arduino, "digitalWrite", "v(ii)", &m3_arduino_digitalWrite);
   m3_LinkRawFunction(module, arduino, "getPinLED", "i()", &m3_arduino_getPinLED);
+  m3_LinkRawFunction(module, arduino, "getChipID", "v(*)", &m3_arduino_getChipID);
 
   /* Serial */
   m3_LinkRawFunction(module, serial, "print", "v(*i)", &m3_arduino_print);

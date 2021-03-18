@@ -183,6 +183,8 @@ void handleUpload(AsyncWebServerRequest *request, String filename, size_t index,
     request->_tempFile.close();
     Serial.printf("UploadEnd: %s (%u)\n", filename.c_str(), index + len);
     request->send(200, "text/plain", "Uploaded");
+    delay(1000);
+    ESP.restart();
   }
 }
 
@@ -191,7 +193,7 @@ void setup()
   Serial.begin(115200);
   delay(100);
 
-  SPIFFS.begin();
+  SPIFFS.begin(true);
   delay(100);
 
   WiFi.mode(WIFI_AP_STA);

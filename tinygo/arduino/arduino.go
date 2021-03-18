@@ -28,3 +28,21 @@ func DigitalWrite(pin, value uint)
 //go:wasm-module arduino
 //go:export getPinLED
 func GetPinLED() uint
+
+//go:wasm-module arduino
+//go:export getChipID
+func _getChipID(buf *byte)
+
+func GetChipID() string {
+	var buf = make([]byte, 16)
+	_getChipID(&buf[0])
+	// Find '\0'
+	n := -1
+	for i, b := range buf {
+		if b == 0 {
+			break
+		}
+		n = i
+	}
+	return string(buf[:n+1])
+}

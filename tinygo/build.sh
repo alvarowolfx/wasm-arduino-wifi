@@ -5,8 +5,8 @@
 # Compile
 tinygo  build -target wasm --no-debug               \
         -panic trap -wasm-abi generic     \
-        -ldflags="-z stack-size=1024 --max-memory=65536" \
-        -heap-size 1024 \
+        -ldflags="-z stack-size=4096 --max-memory=65536" \
+        -heap-size 4096 \
         -o app.wasm app.go
 
 # Optimize (optional)

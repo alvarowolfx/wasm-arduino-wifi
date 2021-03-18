@@ -6,8 +6,9 @@ extern {
   #[link_name = "millis"]         fn unsafe_millis() -> u32;
   #[link_name = "delay"]          fn unsafe_delay(ms: u32);
   #[link_name = "pinMode"]        fn unsafe_pinMode(pin:u32, mode:u32);
-  #[link_name = "digitalWrite"]   fn unsafe_digitalWrite(pin:u32, value:u32);  
+  #[link_name = "digitalWrite"]   fn unsafe_digitalWrite(pin:u32, value:u32);
   #[link_name = "getPinLED"]      fn unsafe_getPinLED() -> u32;
+  #[link_name = "getChipID"] fn unsafe_getChipID(buf : *mut u8);
 }
 
 #[link(wasm_import_module = "serial")]
@@ -46,21 +47,21 @@ pub fn delay          (ms: u32)              { unsafe { unsafe_delay(ms); } }
 pub fn pinMode       (pin:u32, mode:u32)    { unsafe { unsafe_pinMode(pin, mode) } }
 pub fn digitalWrite  (pin:u32, value:u32)   { unsafe { unsafe_digitalWrite(pin, value) } }
 pub fn serialPrintInt(out: u32) { unsafe { unsafe_print_int(out); } }
-pub fn serialPrint     (out: &str)       { 
-  unsafe {     
+pub fn serialPrint     (out: &str)       {
+  unsafe {
     unsafe_print(out.as_bytes().as_ptr() as *const u8, out.len());
   }
 }
 
-pub fn serialPrintln     (out: &str)       {   
+pub fn serialPrintln     (out: &str)       {
   serialPrint(out);
-  serialPrint("\n");  
+  serialPrint("\n");
 }
 
 pub fn getPinLED    () -> u32 { unsafe { unsafe_getPinLED() } }
 
 pub fn wifiConnect (ssid :&str, password : &str){
-  unsafe { 
+  unsafe {
     unsafe_wifi_connect(
       ssid.as_bytes().as_ptr() as *const u8, ssid.len(),
       password.as_bytes().as_ptr() as *const u8, password.len()

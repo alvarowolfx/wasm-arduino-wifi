@@ -18,11 +18,11 @@ impl App {
   fn new() -> Self {
     let led_pin = getPinLED();
     let led_state = false;
-    let last_millis = millis();      
-    
+    let last_millis = millis();
+
     pinMode(led_pin, OUTPUT);
     digitalWrite(led_pin, LOW );
-    
+
     serialPrintln("Hello from Rust 🦀");
     Self { led_pin, led_state, last_millis }
   }
@@ -43,7 +43,7 @@ impl App {
         serialPrintln("Failed to connect!");
         return;
       }
-    }    
+    }
     serialPrintln("Connected!");
     printWifiLocalIp();
     serialPrintln("");
@@ -53,8 +53,8 @@ impl App {
     self.connect();
     let current_millis: u32 = millis();
     if current_millis - self.last_millis >= BLINK_INTERVAL {
-      let connected: bool = wifiStatus() == WL_CONNECTED;      
-      
+      let connected: bool = wifiStatus() == WL_CONNECTED;
+
       serialPrint("[");
       serialPrintInt(current_millis);
       serialPrint("][connected : ");
@@ -62,13 +62,13 @@ impl App {
       serialPrint("][");
       printWifiLocalIp();
       serialPrintln("] Rust 🦀");
-      
+
       self.led_state = !self.led_state;
       digitalWrite(self.led_pin, if self.led_state { HIGH } else { LOW });
-      
+
       self.last_millis = millis();
     }
-    delay(10);    
+    delay(10);
   }
 }
 
@@ -78,7 +78,7 @@ impl App {
 
 #[no_mangle]
 pub extern fn _start() {
-    let mut app = App::new();    
+    let mut app = App::new();
     loop {
         app.run();
     }

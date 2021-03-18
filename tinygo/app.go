@@ -1,15 +1,17 @@
 package main
 
 import (
-	. "./arduino"
-	serial "./serial"
-	wifi "./wifi"
 	"strconv"
+
+	. "wasm-wifi/arduino"
+	serial "wasm-wifi/serial"
+	wifi "wasm-wifi/wifi"
 )
 
 var ledPin = GetPinLED()
 var ledState = false
 var lastMillis uint
+var deviceID = ""
 
 const (
 	blinkInterval = 1000
@@ -23,6 +25,7 @@ func setup() {
 	DigitalWrite(ledPin, LOW)
 	lastMillis = Millis()
 	serial.Println("Hello from TinyGo 🐹")
+	deviceID = GetChipID()
 }
 
 func connect() {
@@ -53,7 +56,13 @@ func loop() {
 		connected := wifi.Status() == wifi.WL_CONNECTED
 		localIP := wifi.LocalIp()
 
-		serial.Println("[" + strconv.FormatUint(uint64(currentMillis), 10) + "]" + "[connected : " + strconv.FormatBool(connected) + "] [" + localIP + "] TinyGo 🐹")
+		serial.Print("[")
+		serial.Print(strconv.FormatUint(uint64(currentMillis), 10))
+		serial.Print("] [" + deviceID)
+		serial.Print("] [connected : ")
+		serial.Print(strconv.FormatBool(connected))
+		serial.Print("] [" + localIP + "] ")
+		serial.Println("TinyGo 🐹")
 
 		ledState = !ledState
 		if ledState {

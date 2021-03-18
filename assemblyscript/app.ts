@@ -1,4 +1,4 @@
-import * as WiFi from './wifi';
+import * as WiFi from "./wifi";
 import {
   HIGH,
   LOW,
@@ -7,9 +7,10 @@ import {
   delay,
   pinMode,
   digitalWrite,
-  getPinLED
-} from './arduino';
-import * as Serial from './serial';
+  getPinLED,
+  getChipID,
+} from "./arduino";
+import * as Serial from "./serial";
 
 let ledPin: u32 = -1;
 
@@ -40,13 +41,15 @@ function connect(): void {
 const blinkInterval: u32 = 1000;
 let lastMillis: u32 = 0;
 let ledState: bool = false;
+let deviceId: string = "";
 
 function setup(): void {
   ledPin = getPinLED();
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, ledState ? HIGH : LOW);
   lastMillis = millis();
-  Serial.println('Hello from AssemblyScript 😊');
+  Serial.println("Hello from AssemblyScript 😊");
+  deviceId = getChipID();
 }
 
 function run(): void {
@@ -56,8 +59,15 @@ function run(): void {
     const connected = WiFi.status() === WiFi.WL_CONNECTED;
     const localIp = WiFi.localIp();
     Serial.println(
-      '[' + currentMillis.toString() + ']' +
-      '[connected : ' + connected.toString() + '] [' + localIp + '] AssemblyScript 😊'
+      "[" +
+        currentMillis.toString() +
+        "] [" +
+        deviceId +
+        "] [connected : " +
+        connected.toString() +
+        "] [" +
+        localIp +
+        "] AssemblyScript 😊"
     );
     ledState = !ledState;
     digitalWrite(ledPin, ledState ? HIGH : LOW);
