@@ -124,7 +124,7 @@ void wasm_task(void *)
       FATAL("ReadWasm", "File not found")
 
     IM3Module module;
-    result = m3_ParseModule(env, &module, buffer, app_wasm_size - 1);
+    result = m3_ParseModule(env, &module, buffer, app_wasm_size);
     if (result)
       FATAL("ParseModule", result);
 
@@ -143,8 +143,7 @@ void wasm_task(void *)
 
     printf("Running WebAssembly...\n");
 
-    const char *i_argv[1] = {NULL};
-    result = m3_CallWithArgs(f, 0, i_argv);
+    result = m3_CallV(f);
 
     // Should not arrive here
 
