@@ -2,7 +2,7 @@
 
 Testing WebAssembly on IoT devices. 
 
-This is a Work in Progress 
+This is a Work in Progress - [Demo video](https://twitter.com/alvaroviebrantz/status/1221618910803513344?s=20)
 
 ### OTA Update WASM file
 
